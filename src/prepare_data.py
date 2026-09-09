@@ -37,7 +37,15 @@ from pathlib import Path
 from collections import defaultdict
 
 # Maps raw Kaggle folder names -> our target class label
+# Full 6-denomination scope (₹2000 excluded: demonetized/rare, not relevant
+# to temple donations, and not in the original spec's training class list).
 CLASS_MAP = {
+    "ten_new": "10",
+    "ten_old": "10",
+    "twenty_new": "20",
+    "twenty_old": "20",
+    "fifty_new": "50",
+    "fifty_old": "50",
     "hundred_new": "100",
     "hundred_old": "100",
     "two_hundred": "200",
@@ -163,8 +171,8 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--include_all", action="store_true",
                          help="Include all denomination folders found, not just "
-                              "the CLASS_MAP entries (10/20/50 etc). Off by default "
-                              "to keep the 3-day prototype scope to 100/200/500.")
+                              "the CLASS_MAP entries. Off by default to exclude "
+                              "two_thousand (out of scope per project spec).")
     args = parser.parse_args()
 
     raw_dir = Path(args.raw_dir)
@@ -192,7 +200,7 @@ def main():
         elif args.include_all:
             class_to_folders[folder.name].append(folder)
         else:
-            print(f"Skipping '{folder.name}' (not in 3-class MVP scope; "
+            print(f"Skipping '{folder.name}' (not in current class scope; "
                   f"pass --include_all to include it)")
 
     if not class_to_folders:

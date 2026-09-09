@@ -1,8 +1,11 @@
-# Daan Drishti - Day 1 Prototype (ML Baseline)
+# Daan Drishti - Prototype (ML Baseline)
 
-Scope: 3-class denomination classifier (₹100 / ₹200 / ₹500) with confidence-based
-ACCEPT/REVIEW decision logic. This is the software core of the demo -- no YOLO,
-OCR, or hardware integration yet (those come in Day 2-3).
+Scope: 6-class denomination classifier (₹10 / ₹20 / ₹50 / ₹100 / ₹200 / ₹500)
+with confidence-based ACCEPT/REVIEW decision logic. This is the software core
+of the demo -- no YOLO, OCR, or hardware integration yet (those come later).
+
+₹2000 is intentionally excluded (demonetized/rare, not relevant to temple
+donations, not in the original spec's training class list).
 
 ## 1. Setup
 
@@ -20,13 +23,19 @@ https://www.kaggle.com/datasets/apoorvshekher/indian-currency-dataset
 
 Unzip it so you end up with:
 ```
+daan-drishti/data/raw/ten_new/*.jpg
+daan-drishti/data/raw/ten_old/*.jpg
+daan-drishti/data/raw/twenty_new/*.jpg
+daan-drishti/data/raw/twenty_old/*.jpg
+daan-drishti/data/raw/fifty_new/*.jpg
+daan-drishti/data/raw/fifty_old/*.jpg
 daan-drishti/data/raw/hundred_new/*.jpg
 daan-drishti/data/raw/hundred_old/*.jpg
 daan-drishti/data/raw/two_hundred/*.jpg
 daan-drishti/data/raw/five_hundred/*.jpg
 ```
-(other denomination folders like ten_new, twenty_old etc. can stay there too --
-prepare_data.py ignores them by default since we're scoping to 3 classes.)
+(the `two_thousand` folder can stay there too -- prepare_data.py ignores it
+by default since it's out of scope.)
 
 ## 3. Prepare train/val/test splits
 

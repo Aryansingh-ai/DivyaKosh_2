@@ -38,8 +38,15 @@ def build_transforms():
         transforms.RandomRotation(degrees=15),
         transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.2),
         transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5)),
+        # RandomResizedCrop simulates partial occlusion (hand covering part
+        # of the note) and background variation (crowded/rushed handling),
+        # without ever showing the model an unrealistic mirrored note.
+        transforms.RandomResizedCrop(224, scale=(0.7, 1.0), ratio=(0.9, 1.1)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        # RandomErasing (applied after ToTensor) blacks out a random patch,
+        # further simulating occlusion/damage without altering note geometry.
+        transforms.RandomErasing(p=0.3, scale=(0.02, 0.15)),
     ])
     eval_tf = transforms.Compose([
         transforms.Resize((224, 224)),
