@@ -24,6 +24,7 @@ checking it against your own data.
 import argparse
 import json
 import time
+from pathlib import Path
 
 import cv2
 import torch
@@ -31,6 +32,7 @@ from PIL import Image
 from torchvision import transforms
 
 from train import build_model  # reuse the same architecture definition
+from inference_log import append_inference_log
 
 
 def load_model(checkpoint_path, device):
@@ -51,7 +53,8 @@ def get_eval_transform():
     ])
 
 
-def classify_image(model, class_names, pil_image, device, threshold, pocket_id="webcam-0"):
+def classify_image(model, class_names, pil_image, device, threshold,
+                   pocket_id="webcam-0", source="webcam"):
     tf = get_eval_transform()
     tensor = tf(pil_image).unsqueeze(0).to(device)
 
@@ -70,6 +73,8 @@ def classify_image(model, class_names, pil_image, device, threshold, pocket_id="
         "item_status": "NOTE_DETECTED",  # placeholder until YOLO validity check is added
         "predicted_denomination": predicted_denomination,
         "classifier_confidence": confidence,
+        "confidence": confidence,
+        "source": source,
         "decision": decision,
         "target_bin": f"BIN_{predicted_denomination}" if decision == "ACCEPT" else "BIN_REVIEW",
         "model_version": "mobilenet_v3_baseline_v0",
@@ -77,10 +82,54 @@ def classify_image(model, class_names, pil_image, device, threshold, pocket_id="
     return result
 
 
+def format_result_lines(result):
+    """Return compact UI lines for a structured inference result."""
+    return [
+        f"Prediction: Rs. {result['predicted_denomination']}",
+        f"Confidence: {result['confidence']:.2%}",
+        f"Decision: {result['decision']}",
+    ]
+
+
+def draw_result_overlay(frame, result):
+    """Draw the latest intentional-capture result onto an OpenCV frame."""
+    color = (0, 180, 0) if result["decision"] == "ACCEPT" else (0, 165, 255)
+    y = 35
+    for line in format_result_lines(result):
+        cv2.putText(frame, line, (15, y), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, color, 2, cv2.LINE_AA)
+        y += 32
+
+
+def display_image_result(image_path, result):
+    """Show a still image with its intentional inference result."""
+    frame = cv2.imread(str(image_path))
+    if frame is None:
+        print("Warning: unable to display image with OpenCV.")
+        return
+    draw_result_overlay(frame, result)
+    window_name = "Daan Drishti - image inference"
+    cv2.imshow(window_name, frame)
+    print("Image result displayed. Press any key or close the window to continue.")
+    cv2.waitKey(0)
+    cv2.destroyWindow(window_name)
+
+
+def log_result(result, log_path):
+    if append_inference_log(result, log_path):
+        print(f"Logged intentional inference to: {log_path}")
+
+
 def run_single_image(args, model, class_names, device):
     image = Image.open(args.image).convert("RGB")
-    result = classify_image(model, class_names, image, device, args.threshold)
+    result = classify_image(
+        model, class_names, image, device, args.threshold,
+        pocket_id=Path(args.image).name, source="image"
+    )
     print(json.dumps(result, indent=2))
+    log_result(result, args.log_path)
+    if not args.no_display:
+        display_image_result(args.image, result)
 
 
 def run_webcam(args, model, class_names, device):
@@ -92,21 +141,32 @@ def run_webcam(args, model, class_names, device):
             f"as the active camera device and try a different --camera_index."
         )
 
-    print("Press SPACE to capture and classify, ESC to quit.")
+    print("Press SPACE to capture and classify, ESC to quit. "
+          "Only SPACE-triggered captures are logged.")
+    latest_result = None
     while True:
         ret, frame = cap.read()
         if not ret:
             print("Failed to read frame from camera.")
             break
-        cv2.imshow("Daan Drishti - press SPACE to capture", frame)
+        display_frame = frame.copy()
+        if latest_result:
+            draw_result_overlay(display_frame, latest_result)
+        cv2.putText(display_frame, "SPACE: capture | ESC: quit", (15, display_frame.shape[0] - 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.imshow("Daan Drishti - press SPACE to capture", display_frame)
         key = cv2.waitKey(1) & 0xFF
         if key == 27:  # ESC
             break
         elif key == 32:  # SPACE
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             pil_image = Image.fromarray(rgb_frame)
-            result = classify_image(model, class_names, pil_image, device, args.threshold)
-            print(json.dumps(result, indent=2))
+            latest_result = classify_image(
+                model, class_names, pil_image, device, args.threshold,
+                pocket_id=f"webcam-{args.camera_index}", source="webcam"
+            )
+            print(json.dumps(latest_result, indent=2))
+            log_result(latest_result, args.log_path)
 
     cap.release()
     cv2.destroyAllWindows()
@@ -118,9 +178,14 @@ def main():
     parser.add_argument("--image", type=str, default=None, help="Path to a single image to classify")
     parser.add_argument("--webcam", action="store_true", help="Run live webcam/phone-cam capture loop")
     parser.add_argument("--camera_index", type=int, default=0)
-    parser.add_argument("--threshold", type=float, default=0.85,
+    parser.add_argument("--threshold", type=float, default=0.90,
                          help="Confidence threshold for ACCEPT vs REVIEW. "
-                              "TUNE THIS against your val set before demoing.")
+                              "Default 0.90 is provisional, not calibrated, and "
+                              "does not detect unknown objects.")
+    parser.add_argument("--log_path", type=str, default="logs/inference.jsonl",
+                        help="JSONL path for intentional image/capture results.")
+    parser.add_argument("--no_display", action="store_true",
+                        help="Do not show the image-mode OpenCV result window.")
     args = parser.parse_args()
 
     if not args.image and not args.webcam:

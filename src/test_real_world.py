@@ -48,7 +48,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--checkpoint", type=str, default="models/mobilenet_v3_baseline.pt")
-    parser.add_argument("--threshold", type=float, default=0.85)
+    parser.add_argument("--threshold", type=float, default=0.90,
+                        help="Provisional confidence threshold; calibrate before deployment.")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,11 +69,12 @@ def main():
 
     for img_path in image_paths:
         image = Image.open(img_path).convert("RGB")
-        result = classify_image(model, class_names, image, device, args.threshold, pocket_id=img_path.name)
+        result = classify_image(model, class_names, image, device, args.threshold,
+                                pocket_id=img_path.name, source="real_world_test")
 
         true_label = extract_true_label(img_path.name, class_names)
         pred_label = result["predicted_denomination"]
-        conf = result["classifier_confidence"]
+        conf = result["confidence"]
         decision = result["decision"]
 
         status = ""

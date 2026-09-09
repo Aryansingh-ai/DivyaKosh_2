@@ -93,6 +93,11 @@ Expected output (structured JSON):
 }
 ```
 
+Image mode displays the input image with denomination, confidence, and the
+ACCEPT/REVIEW decision. Add `--no_display` for headless testing. Every
+intentional image inference is appended to `logs/inference.jsonl` by default;
+change this location with `--log_path`.
+
 ## 6. Test with your phone camera (live, before committing to hardware)
 
 ```bash
@@ -103,6 +108,11 @@ Press SPACE to capture a frame and classify it, ESC to quit. If your phone
 is connected as a webcam via USB/app, you may need to try `--camera_index 1`
 or `2` instead of `0`.
 
+The webcam remains live and overlays the latest Space-triggered prediction.
+Only Space-triggered captures are logged; regular preview frames are never
+stored. The default `--threshold 0.90` is a provisional conservative starting
+point, not a calibrated threshold, and it does not detect unknown objects.
+
 **Do this test with a plain background**, not a decorative one, even though
 the training data has decorative backgrounds. If accuracy drops badly here
 compared to val accuracy, that confirms the background-bias risk flagged
@@ -111,12 +121,13 @@ re-training, not panicking. Flag it to me with the numbers if it happens.
 
 ## 7. Known limitations at this stage (say these out loud to judges, don't hide them)
 
-- Only 3 of 6 denominations implemented (100/200/500) -- scoped down for time.
+- Notes-only classification for all 6 planned denominations is implemented;
+  physical-content validation is not.
 - No YOLO validity/contamination check yet -- assumes a single note is
   already correctly placed in frame.
 - No OCR secondary verification yet -- decision relies on MobileNet
   confidence alone.
-- Confidence threshold (0.85 default) is a starting point, not yet tuned
+- Confidence threshold (0.90 default) is a provisional starting point, not yet tuned
   against this dataset's actual confidence distribution -- next step is to
   look at correct vs. incorrect prediction confidences on the val set and
   pick a threshold that actually separates them.
@@ -125,7 +136,7 @@ re-training, not panicking. Flag it to me with the numbers if it happens.
 ## Next steps (Day 2)
 
 1. Look at the val-set confidence distribution to properly tune the
-   REVIEW threshold instead of using the 0.85 default.
+   REVIEW threshold instead of using the 0.90 default.
 2. Wire ESP32 <-> Python serial protocol for capture-trigger and
    discharge based on the `decision` field above.
 3. (Optional, if time allows) Add PaddleOCR as secondary evidence per the
