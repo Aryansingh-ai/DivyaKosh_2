@@ -1,0 +1,57 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- ML / project artifacts (generated at runtime) ---
+data/
+models/
+logs/
+*.pt
+*.pth
+*.onnx
+
+# --- SQLite (local DB, rebuilt from logs) ---
+# sqlite/*.db
+# sqlite/*.db-journal
+# sqlite/*.db-wal
+# sqlite/*.db-shm
+
+# --- Secrets / local config ---
+.env
+.env.*
+!.env.example
+
+# --- IDE / editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- OneDrive (your project is under OneDrive) ---
+*.tmp
+~$*

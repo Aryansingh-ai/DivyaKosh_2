@@ -4,3 +4,28 @@ opencv-python>=4.8.0
 scikit-learn>=1.3.0
 Pillow>=10.0.0
 numpy>=1.24.0
+
+
+# From the project root in PowerShell:
+# cd "C:\Users\aryan\OneDrive\Documents\PROJECTS\DivyaKosh"
+# python -m venv venv
+# .\venv\Scripts\Activate.ps1
+# python -m pip install -r requirements.txt
+
+# Prepare the dataset:
+# python src/prepare_data.py --raw_dir data/raw --out_dir data
+
+# Train the model:
+# python src/train.py --data_dir data --epochs 15 --batch_size 16
+
+# Run inference on an image:
+# python src/infer.py --image data/test/100/IMG_1666266977500.jpg --checkpoint models/mobilenet_v3_baseline.pt --no_display
+
+# Run webcam inference:
+# python src/infer.py --webcam --checkpoint models/mobilenet_v3_baseline.pt --camera_index 1
+
+# Optional real-world evaluation:
+# python src/test_real_world.py --folder data/real_test --checkpoint models/mobilenet_v3_baseline.pt
+
+# If PowerShell blocks activation, use
+# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass

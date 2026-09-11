@@ -167,6 +167,7 @@ def run_webcam(args, model, class_names, device):
             )
             print(json.dumps(latest_result, indent=2))
             log_result(latest_result, args.log_path)
+            break
 
     cap.release()
     cv2.destroyAllWindows()
