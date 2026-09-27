@@ -1,57 +1,119 @@
-# --- Python ---
+# ============================================================
+# DivyaKosh / DAANDRISHTI - Git Ignore
+# ============================================================
+
+# -------------------------
+# Python
+# -------------------------
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-*.egg-info/
-.eggs/
-dist/
-build/
-*.egg
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
+*.pyo
+*.pyd
 
-# --- Virtual environments ---
-venv/
+# Virtual environments
 .venv/
+venv/
 env/
 ENV/
 
-# --- ML / project artifacts (generated at runtime) ---
-data/
-models/
-logs/
-*.pt
-*.pth
-*.onnx
+# Python packaging
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# --- SQLite (local DB, rebuilt from logs) ---
-# sqlite/*.db
-# sqlite/*.db-journal
-# sqlite/*.db-wal
-# sqlite/*.db-shm
-
-# --- Secrets / local config ---
+# -------------------------
+# Environment / Secrets
+# -------------------------
 .env
 .env.*
 !.env.example
 
-# --- IDE / editor ---
+# API keys / credentials
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# -------------------------
+# Jupyter
+# -------------------------
+.ipynb_checkpoints/
+
+# -------------------------
+# IDE / Editors
+# -------------------------
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# --- OS junk ---
 .DS_Store
-Thumbs.db
-ehthumbs.db
-Desktop.ini
 
-# --- OneDrive (your project is under OneDrive) ---
+# -------------------------
+# Logs
+# -------------------------
+logs/*.log
+logs/*.txt
+
+# Keep inference log out of Git
+logs/inference.jsonl
+
+# -------------------------
+# Debug / Temporary Output
+# -------------------------
+debug/
+tmp/
+temp/
 *.tmp
-~$*
+
+# -------------------------
+# Model checkpoints
+# -------------------------
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.h5
+*.keras
+
+# -------------------------
+# Generated model outputs
+# -------------------------
+models/*_history.json
+models/*_results.json
+
+# -------------------------
+# Large generated datasets
+# -------------------------
+synthetic_dataset/
+data2/
+data/
+
+# -------------------------
+# Dataset archives
+# -------------------------
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# -------------------------
+# Generated audit outputs
+# -------------------------
+audit/*.csv
+audit/*.json
+
+# -------------------------
+# Camera/debug images
+# -------------------------
+debug/live_roi/
+debug/*.jpg
+debug/*.jpeg
+debug/*.png
+
+# -------------------------
+# OS files
+# -------------------------
+Thumbs.db
+Desktop.ini
